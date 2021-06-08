@@ -44,6 +44,9 @@ let renderTitle = () => {
 renderTitle();
 
 /*************** DYNAMIC ARRAY ***************/
+// ?
+// ?
+// ?
 
 const dynamicArray = (size) => {
   let arr = [];
