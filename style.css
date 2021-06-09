@@ -139,6 +139,11 @@ body {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.color {
+  color: green;
+  background-color: green;
+}
+
 #restart {
   height: 20%;
   width: 100%;
