@@ -4,10 +4,15 @@ const mainContent = document.getElementById("mainContent");
 
 const calculation = document.getElementById("calculation");
 const sum = document.getElementById("sum");
+const equalSign = document.getElementById("equal-sign");
 const target = document.getElementById("target");
+
+const score = document.getElementById("score-bar");
 
 const gridBackground = document.getElementById("grid");
 const gameGrid = document.getElementById("gameGrid");
+
+const restartGame = document.getElementById("restart");
 
 const title1 = document.getElementById("title-1");
 const title2 = document.getElementById("title-2");
@@ -18,9 +23,6 @@ let renderTitle = () => {
   let heading1 = "MATH";
   let heading2 = "CLASH";
 
-  // let heading = "MATH CLASH";
-  // let headingSplit = heading.split(/\s*/);
-  // console.log("heading:", headingSplit);
   let mathSplit = heading1.split("");
   let clashSplit = heading2.split("");
 
@@ -43,6 +45,18 @@ let renderTitle = () => {
 };
 renderTitle();
 
+/**************** VARIABLE DECLARATION ***************/
+
+let playerScore = 0;
+let isGameover = false;
+
+const minimumNumber = 20;
+const maximumNumber = 100;
+const randomMutiplier = maximumNumber - minimumNumber;
+
+let interval = null;
+const intervalTime = 5000;
+
 /*************** DYNAMIC ARRAY ***************/
 
 const dynamicArray = (size) => {
@@ -56,37 +70,37 @@ const dynamicArray = (size) => {
 const size = 6;
 let gridArr = dynamicArray(size);
 let copyGridArr = dynamicArray(size);
-// console.log("grid array", gridArr);
-// console.log("copy array", copyGridArr);
 
 /*************** PUSHING RANDOM NUMBER INTO DYNAMIC ARRAY ***************/
 
 const randomNumberArr = () => {
   for (let i = 0; i < gridArr.length; i++) {
+    if (gridArr[i].length >= size) {
+      endInterval();
+      isGameover = true;
+    }
     randomNum = Math.ceil(Math.random() * 10);
     gridArr[i].unshift(randomNum);
-    copyGridArr[i].unshift(randomNum);
-
-    if (gridArr[i].length > size) {
-      clearInterval(interval);
-      console.log("Game Over!");
-    }
+    copyGridArr[i].unshift(false);
   }
-  console.log("copy arr:", gridArr);
+  // console.log("copy arr:", gridArr);
 
-  console.log("copy arr:", copyGridArr);
+  // console.log("copy arr:", copyGridArr);
 };
 
 randomNumberArr();
 
 /*************** INTERVAL ***************/
 
-let interval = setInterval(() => {
-  gameGrid.innerText = ``;
+const startInterval = () => {
+  interval = setInterval(() => {
+    randomNumberArr();
+    renderGrid();
+  }, intervalTime);
+};
+startInterval();
 
-  randomNumberArr();
-  renderGrid();
-}, 5000);
+const endInterval = () => clearInterval(interval);
 
 /*************** RENDERING GAME GRID DYNAMICALLY ***************/
 
@@ -96,10 +110,13 @@ let randomTargetNum = null;
 let clickNumber = 0;
 
 const targetNumber = () => {
-  randomTargetNum = Math.ceil(Math.random() * 100);
-  // randomTargetNum = 20;
+  randomTargetNum = minimumNumber + Math.ceil(Math.random() * randomMutiplier);
 
   target.innerHTML = randomTargetNum;
+
+  equalSign.innerHTML = `<span id = "sign-span"></span>`;
+
+  score.innerHTML = `Your Score: ${playerScore}`;
 
   sum.innerHTML = clickNumber;
 
@@ -107,20 +124,77 @@ const targetNumber = () => {
 };
 targetNumber();
 
-const handleClick = (e, i, j) => {
-  console.log("grid", i, j);
+const gameOver = () => {
+  if (isGameover) {
+    score.innerHTML = `Game Over!`;
+  }
+  return isGameover;
+};
 
-  clickNumber += parseInt(e.target.innerText);
-  // console.log(clickNumber);
+const handleClick = (e, i, j) => {
+  if (gameOver()) return;
+
+  if (copyGridArr[i][j]) {
+    copyGridArr[i][j] = false;
+    clickNumber -= parseInt(e.target.innerText);
+  } else {
+    copyGridArr[i][j] = true;
+    clickNumber += parseInt(e.target.innerText);
+  }
 
   sum.innerHTML = clickNumber;
-  // console.log("event", e);
-  // e.target.style.color = "green";
-  // e.target.style.backgroundColor = "green";
-  console.log("splice:", copyGridArr[i].splice(j, 1));
+
+  winCheck();
+
+  renderGrid();
+};
+
+const winCheck = () => {
+  if (clickNumber === randomTargetNum) {
+    deleteCells();
+    clickNumber = 0;
+
+    playerScore += 10;
+
+    score.innerHTML = `Your Score: ${playerScore}`;
+
+    document.getElementById("sign-span").style.backgroundImage =
+      "url(/Images/equal-sign.svg)";
+
+    setTimeout(() => {
+      document.getElementById("sign-span").style.backgroundImage =
+        "url(/Images/not-equal.svg)";
+
+      sum.innerText = 0;
+    }, 2000);
+  } else if (clickNumber > randomTargetNum) {
+    resetCells();
+    clickNumber = 0;
+    sum.innerHTML = 0;
+  }
+};
+
+const deleteCells = () => {
+  for (let i = 0; i < gridArr.length; i++) {
+    for (let j = 0; j < gridArr.length; j++) {
+      if (copyGridArr[i][j] === true) {
+        console.log("Splice", gridArr[i].splice(j, 1));
+        copyGridArr[i][j] = false;
+      }
+    }
+  }
+};
+const resetCells = () => {
+  for (let i = 0; i < gridArr.length; i++) {
+    for (let j = 0; j < gridArr.length; j++) {
+      copyGridArr[i][j] = false;
+    }
+  }
 };
 
 const renderGrid = () => {
+  if (gameOver()) return;
+  gameGrid.innerText = ``;
   for (let i = 0; i < gridArr.length; i++) {
     let col = document.createElement("div");
 
@@ -133,22 +207,14 @@ const renderGrid = () => {
       gridItem.id = `grid-item-${i + 1}-${j + 1}`;
       gridItem.className = "grid-item";
 
-      if (clickNumber === randomTargetNum) {
-        gridItem.innerHTML = copyGridArr[i][j];
-        if (copyGridArr[i][j] === undefined) {
-          gridItem.innerText = "";
-        }
-        clearInterval(interval);
-      } else if (clickNumber > randomTargetNum) {
-        gridItem.innerHTML = gridArr[i][j];
-        clickNumber = 0;
-        sum.innerHTML = clickNumber;
-      } else {
-        gridItem.innerText = gridArr[i][j];
+      if (copyGridArr[i][j] === true) {
+        gridItem.classList.add("color");
+      }
 
-        if (gridArr[i][j] === undefined) {
-          gridItem.innerText = "";
-        }
+      gridItem.innerText = gridArr[i][j];
+
+      if (gridArr[i][j] === undefined) {
+        gridItem.innerText = "";
       }
 
       gridItem.addEventListener("click", (e) => {
@@ -160,6 +226,15 @@ const renderGrid = () => {
   }
 };
 renderGrid();
+
+let gameRestart = () => {
+  restartGame.innerHTML = `<span id = "restart-btn">RESTART GAME</span>`;
+
+  document.getElementById("restart-btn").addEventListener("click", () => {
+    window.location.reload();
+  });
+};
+gameRestart();
 
 // let dynamicArr = () => {
 // let Arr = Array.from(gameGrid);

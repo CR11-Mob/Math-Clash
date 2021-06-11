@@ -1,0 +1,14 @@
+<svg id="not-equal" xmlns="http://www.w3.org/2000/svg" width="115" height="74" viewBox="0 0 115 74">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke: #000;
+        stroke-width: 2px;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <path id="Shape_1_copy_2" data-name="Shape 1 copy 2" class="cls-1" d="M24,27H91"/>
+  <path id="Shape_1_copy_2-2" data-name="Shape 1 copy 2" class="cls-1" d="M24,47H91"/>
+  <path class="cls-1" d="M79.344,7.523L35.656,67.477"/>
+</svg>
